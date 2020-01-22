@@ -1,0 +1,58 @@
+---
+title: "R Notebook: Analysis of Electricity Consumption at Dyrehaugen"
+output: html_notebook
+---
+
+R script for analysing electricity consumption.
+Data fetched from Hafslund Nett.
+Data starts 2018-04-27 as automatic metering was installed.
+
+
+```{r}
+# zendog: ~/zr/hafs/hafs.R
+# 181212 002
+#
+# Trekker ut forbruk per dag
+# Data starter 2018-04-27
+#
+library("rjson")
+library("data.table")
+
+data.oppe=fromJSON(file="/home/jmh/zr/hafs/707057500049214797.json")
+data.nede=fromJSON(file="/home/jmh/zr/hafs/707057500049214803.json")
+daily.oppe=as.data.frame(data.oppe$`707057500049214797`$months)
+daily.nede=as.data.frame(data.nede$`707057500049214803`$months)
+dates.oppe=as.Date(substring(colnames(daily.oppe),15,22), format='%Y%m%d')
+dates.nede=as.Date(substring(colnames(daily.nede),15,22), format='%Y%m%d')
+
+kwh.oppe=as.numeric(daily.oppe)
+kwh.nede=as.numeric(daily.nede)
+maxkwh=max(max(kwh.oppe),max(kwh.nede))
+
+plot(kwh.oppe~dates.oppe, type="l", col="red", xlab="dato", ylab="Kwh", axes=FALSE)
+lines(kwh.nede~dates.nede, col="blue")
+title("Dyrehaugen: Daglig Strømforbruk")
+legend("topleft",legend=c("Oppe","Nede"),lty=1,col=c("red","blue"))
+
+#axis(1, dates.oppe, at=seq(from = min(dates.oppe),to = max(dates.oppe), by="month"))
+#axis(1, dates.oppe, format(dates.oppe, "%b %d"), las=2, cex.axis = .7)
+#axis(1, dates.oppe,format(dates.oppe, "%Y%m%d"))
+
+#axis.Date(1, at=seq(min(dates.oppe), max(dates.oppe), by="1 mon"), format="%b\n%d")
+axis.Date(1, at=seq(as.Date("2018-05-1"), max(dates.oppe), by="1 mon"), las=2, cex.axis=.8,format="%y%m%d")
+axis(2)
+grid()
+
+df.oppe=as.data.frame(dates.oppe)
+df.nede=as.data.frame(dates.nede)
+
+df.oppe=cbind(df.oppe,kwh.oppe)
+df.nede=cbind(df.oppe,kwh.nede)
+
+df.oppe
+df.nede
+
+# EOF
+```
+Data ends 2018-12-11
+New data extraction from Hafslund Nett needed for more recent consumption.
